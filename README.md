@@ -10,7 +10,7 @@ a template for cpu simulation
   - [ ] how it works
   - [ ] how to use
   - [ ] how to develope
-  - [ ] stay update
+  - [ ] stay updated
 - [ ] CI/CD 
   - [ ] github actions
   - [ ] manifest
