@@ -1,3 +1,4 @@
+#! usr/bin/python
 """
 HELP:
 write classes ypu need in here.
@@ -8,37 +9,35 @@ for example:
 
 """
 
-
 from abc import ABC, abstractmethod
+from .errors import PrBaseException
 
 class BaseMemory(ABC):
-    ...
 
+    @abstractmethod
+    def set(self, data: dict)-> None:
+        ...
+
+    @property
+    @abstractmethod
+    def read(self)-> dict:
+        ...
 class BaseRegister(ABC):
-    ...
 
+    @abstractmethod
+    def set(self, data:dict) -> None:
+        ...
+
+    @property
+    @abstractmethod
+    def read(self)-> dict:
+        ...
 
 class BaseCore(ABC):
 
-    memory : BaseMemory = ...
+    memory: BaseMemory = ...
     registers: BaseRegister = ... 
 
     @abstractmethod
-    def set_register(self):
+    def execute_instruction(self, instruction:dict):
         ...
-    
-    @property
-    @abstractmethod
-    def read_registers(self):
-        ...
-
-    @abstractmethod
-    def set_memory(self):
-        ...
-    
-    @property
-    @abstractmethod
-    def read_memory(self):
-        ...
-
-
