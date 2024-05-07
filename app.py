@@ -9,7 +9,7 @@ core = Core()
 
 @app.route("/register/set", methods=["POST"])
 def set_register():
-    data = json.loads(request.data)
+    data:dict[str,str] = json.loads(request.data)
     try:
         core.registers.set(data)
         response = "OK"
@@ -31,24 +31,26 @@ def read_register():
 def set_memory():
     data = json.loads(request.data)
     try:
-        core.memory.set(data)
+        core.memory.set(data["data"])
         response = "OK"
     except PrBaseException as e:
         response = e.message , e.status
 
     return response
 
+
 @app.route("/memory/read", methods=["GET"])
 def read_memory():
     data = core.memory.read
-    return data
+    res = {"data": data}
+    return res
 
 
-@app.route("/execute", methods=["POST"])
+@app.route("/core/instruction", methods=["POST"])
 def execute_instruction():  
-    data = json.loads(request.data) 
-    r = core.execute_instruction(data)
-    return r
+    data: dict[str, list[str]] = json.loads(request.data) 
+    core.execute_instruction(data["instructions"])
+    return "OK"
 
 
 

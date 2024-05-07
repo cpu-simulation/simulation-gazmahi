@@ -1,28 +1,29 @@
 #! usr/bin/python
 from abc import ABC, abstractmethod
 from .errors import PrBaseException
+from dataclasses import dataclass
 
 class BaseMemory(ABC):
 
     @abstractmethod
-    def set(self, data: dict)-> None:
+    def set(self, data: list[dict])-> None:
         ...
 
     @property
     @abstractmethod
-    def read(self)-> dict:
+    def read(self)-> list[dict]:
         ...
 
         
 class BaseRegister(ABC):
 
     @abstractmethod
-    def set(self, data:dict) -> None:
+    def set(self, data:dict[str, str]) -> None:
         ...
 
     @property
     @abstractmethod
-    def read(self)-> dict:
+    def read(self)-> dict[str, str]:
         ...
 
 class BaseCore(ABC):
@@ -31,5 +32,5 @@ class BaseCore(ABC):
     registers: BaseRegister = ... 
 
     @abstractmethod
-    def execute_instruction(self, instruction:dict):
+    def execute_instruction(self, instruction:list[str])-> None:
         ...
