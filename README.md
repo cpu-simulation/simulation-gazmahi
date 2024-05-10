@@ -4,8 +4,8 @@ a template for cpu simulation
 
 ## TODO
 
-- [ ] declare endpoints
-- [ ] add more classes
+- [x] declare endpoints
+- [x] add more classes
 - [ ] documentation
   - [ ] how it works
   - [ ] how to use
