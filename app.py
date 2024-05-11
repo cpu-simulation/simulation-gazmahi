@@ -7,15 +7,19 @@ from src import Core, PrBaseException
 app = Flask(__name__)
 core = Core()
 
-@app.route("/register/set", methods=["POST"])
-def set_register():
-    data:dict[str,str] = json.loads(request.data)
+
+@app.route("/register/write", methods=["POST"])
+def write_to_register():
+    data: dict[str, str] = json.loads(request.data)
     try:
-        core.registers.set(data)
-        response = "OK"
-    
+        core.registers.write(data)
+        response = "OK", 200
+
     except PrBaseException as e:
         response = e.message, e.status
+
+    except Exception as e:
+        response = "Internal Server Error", 500
 
     return response
 
@@ -26,15 +30,15 @@ def read_register():
     return data
 
 
-
-@app.route("/memory/set", methods=["POST"])
-def set_memory():
+@app.route("/memory/write", methods=["POST"])
+def write_to_memory():
     data = json.loads(request.data)
     try:
-        core.memory.set(data["data"])
-        response = "OK"
+        core.memory.write(data["data"])
+        response = "OK", 200
+
     except PrBaseException as e:
-        response = e.message , e.status
+        response = e.message, e.status
 
     return response
 
@@ -47,13 +51,30 @@ def read_memory():
 
 
 @app.route("/core/instruction", methods=["POST"])
-def execute_instruction():  
-    data: dict[str, list[str]] = json.loads(request.data) 
-    core.execute_instruction(data["instructions"])
-    return "OK"
+def execute_instructions():
+    try:
+        core.execute_instruction()
+        response = "OK", 200
+
+    except PrBaseException as e:
+        response = e.message, e.status
+
+    return response
 
 
+@app.route("/core/compile", methods=["POST"])
+def compile_instructions():
+    try:
+        data: dict[str, list[str]] = json.loads(request.data)
+        core.compile(data["instructions"])
+        return "OK", 200
+    
+    except PrBaseException as e:
+        return e.message, e.status
+    
+    except:
+        return "Internal Server Error", 500
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
