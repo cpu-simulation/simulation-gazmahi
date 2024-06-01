@@ -1,18 +1,16 @@
 from flask import Flask, request
 import json
 
-from src import Core, PrBaseException
+from src import functions, PrBaseException
 
 
 app = Flask(__name__)
-core = Core()
-
 
 @app.route("/register/write", methods=["POST"])
 def write_to_register():
     data: dict[str, str] = json.loads(request.data)
     try:
-        core.registers.write(data)
+        functions.register_write(data)
         response = "OK", 200
 
     except PrBaseException as e:
@@ -26,7 +24,7 @@ def write_to_register():
 
 @app.route("/register/read", methods=["GET"])
 def read_register():
-    data = core.registers.read
+    data = functions.register_read()
     return data
 
 
@@ -34,7 +32,7 @@ def read_register():
 def write_to_memory():
     data = json.loads(request.data)
     try:
-        core.memory.write(data["data"])
+        functions.memory_bulk_write(data["data"])
         response = "OK", 200
 
     except PrBaseException as e:
@@ -45,7 +43,7 @@ def write_to_memory():
 
 @app.route("/memory/read", methods=["GET"])
 def read_memory():
-    data = core.memory.read
+    data = functions.memory_bulk_read()
     res = {"data": data}
     return res
 
@@ -53,7 +51,7 @@ def read_memory():
 @app.route("/core/instruction", methods=["POST"])
 def execute_instructions():
     try:
-        core.execute_instruction()
+        functions.execute_instruction()
         response = "OK", 200
 
     except PrBaseException as e:
@@ -66,7 +64,7 @@ def execute_instructions():
 def compile_instructions():
     try:
         data: dict[str, list[str]] = json.loads(request.data)
-        core.compile(data["instructions"])
+        functions.compile(data["instructions"])
         return "OK", 200
     
     except PrBaseException as e:
