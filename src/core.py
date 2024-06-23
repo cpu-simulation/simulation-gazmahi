@@ -1,5 +1,41 @@
-#! usr/bin/python
 from pprint import pprint
+
+
+
+class Register:
+    def __init__(self, size):
+        self.size = size
+        self.value = 0
+
+    def read(self):
+        return self.value
+
+    def write(self, value):
+        self.value = value & ((1 << self.size) - 1)
+
+
+class Memory:
+    def __init__(self, size=4096):
+        self.size = size
+        self.memory = [0] * size
+
+    def read(self, address):
+        return self.memory[address]
+
+    def write(self, address, value):
+        self.memory[address] = value
+
+
+class ALU:
+    def add(self, a, b):
+        result = a + b
+        carry = result > 0xFFFF
+        return result & 0xFFFF, carry
+
+    def sub(self, a, b):
+        result = a - b
+        carry = result < 0
+        return result & 0xFFFF, carry
 
 
 class Core:
@@ -332,17 +368,100 @@ class Core:
 
 
 
-                    
+    def execute(self):
+        # self.memory = Memory()
+        self.accumulator = Register(16)
+        self.pc = Register(12)  # Program Counter
+        self.carry = False
+        self.zero = False
+        while True:
+            instruction = self.memory.read(self.pc.read())
+            opcode = (instruction & 0xF000) >> 12
+            operand = instruction & 0x0FFF
+
+            if opcode == 0x0:  # HLT
+                break
+            elif opcode == 0x1:  # LDA
+                self.lda(operand)
+            elif opcode == 0x2:  # STA
+                self.sta(operand)
+            elif opcode == 0x3:  # ADD
+                self.add(operand)
+            elif opcode == 0x4:  # SUB
+                self.sub(operand)
+            elif opcode == 0x5:  # IN
+                self._in(operand)
+            elif opcode == 0x6:  # OUT
+                self.out(operand)
+            elif opcode == 0x7:  # JMP
+                self.jmp(operand)
+            elif opcode == 0x8:  # JZ
+                self.jz(operand)
+            elif opcode == 0x9:  # JC
+                self.jc(operand)
+            else:
+                raise ValueError(f"Invalid opcode {opcode}")
+
+            self.pc.write(self.pc.read() + 1)
+
+    def lda(self, address):
+        value = self.memory.read(address)
+        self.accumulator.write(value)
+        self.update_flags(value)
+
+    def sta(self, address):
+        value = self.accumulator.read()
+        self.memory.write(address, value)
+
+    def add(self, address):
+        value = self.memory.read(address)
+        result = self.accumulator.read() + value
+        self.accumulator.write(result & 0xFFFF)
+        self.carry = result > 0xFFFF
+        self.update_flags(result)
+
+    def sub(self, address):
+        value = self.memory.read(address)
+        result = self.accumulator.read() - value
+        self.accumulator.write(result & 0xFFFF)
+        self.carry = result < 0
+        self.update_flags(result)
+
+    def _in(self, address):
+        # For simplicity, assume input is provided externally
+        value = external_input()
+        self.memory.write(address, value)
+
+    def out(self, address):
+        value = self.memory.read(address)
+        external_output(value)
+
+    def jmp(self, address):
+        self.pc.write(address)
+
+    def jz(self, address):
+        if self.zero:
+            self.pc.write(address)
+
+    def jc(self, address):
+        if self.carry:
+            self.pc.write(address)
+
+    def update_flags(self, value):
+        self.zero = (value == 0)
+        self.carry = (value > 0xFFFF)
+
+# Example external input/output functions
+def external_input():
+    # Placeholder for actual input handling
+    return 0x1234
+
+def external_output(value):
+    # Placeholder for actual output handling
+    print(f"Output: {value:04X}")
 
                     
     
-    def execute_instruction(self) -> None:
-        """
-        execute saved instructions
-        """
-        ...
-
-
 
 
 
