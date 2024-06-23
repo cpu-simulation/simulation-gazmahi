@@ -38,6 +38,43 @@ class ALU:
         return result & 0xFFFF, carry
 
 
+
+class Register:
+    def __init__(self, size):
+        self.size = size
+        self.value = 0
+
+    def read(self):
+        return self.value
+
+    def write(self, value):
+        self.value = value & ((1 << self.size) - 1)
+
+
+class Memory:
+    def __init__(self, size=4096):
+        self.size = size
+        self.memory = [0] * size
+
+    def read(self, address):
+        return self.memory[address]
+
+    def write(self, address, value):
+        self.memory[address] = value
+
+
+class ALU:
+    def add(self, a, b):
+        result = a + b
+        carry = result > 0xFFFF
+        return result & 0xFFFF, carry
+
+    def sub(self, a, b):
+        result = a - b
+        carry = result < 0
+        return result & 0xFFFF, carry
+
+
 class Core:
     def __init__(self) -> None:
         self.memory = []
