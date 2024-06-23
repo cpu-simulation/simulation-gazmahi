@@ -230,7 +230,7 @@ class Core:
 
         
         def BSA(opcode, operand):
-            if opcode == 0X4:
+            if opcode == 0X5:
                 pass
             else:
                 operand = self.memory_read(operand)    
@@ -239,6 +239,14 @@ class Core:
             self.memory_write({operand: self.register_read("PC")})
             self.register_write({"PC": operand})
 
+
+        def ISZ(opcode, operand):
+            if opcode == 0X6:
+                pass
+            else:
+                operand = self.memory_read(operand)   
+
+            ... 
 
 
 
