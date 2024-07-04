@@ -136,14 +136,16 @@ class Core:
 
 
     def fetch_and_decode(self):
-        self.pc = self.register_read("PC")
+        PC = self.register_read("PC")
+        self.register_write({"AR": PC})
+        
         self.carry = False
         self.zero = False
         while True:
-            instruction = self.memory.read(self.pc)
-            self.register_write({"PC": self.pc + 1})
-            opcode = (instruction & 0XF000) >> 12
-            operand = instruction & 0X0FFF
+            IR = self.memory.read(PC)
+            self.register_write({"PC": PC + 1})
+            opcode = (IR & 0XF000) >> 12
+            operand = IR & 0X0FFF
 
             if opcode == 0X7:
                 self.register_based_instruction(operand)
@@ -152,7 +154,91 @@ class Core:
 
 
     def register_based_instruction(self, operand):
-        ...
+        if operand == 0X7800:
+            CLA()
+        elif operand == 0X7400:
+            CLE()
+        elif operand == 0X7200:
+            CMA()
+        elif operand == 0X7100:
+            CME()
+        elif operand == 0X7080:
+            CIR()
+        elif operand == 0X7040:
+            CIL()
+        elif operand == 0X7020:
+            INC()
+        elif operand == 0X7010:
+            SPA()
+        elif operand == 0X7008:
+            SNA()
+        elif operand == 0X7004:
+            SZA()
+        elif operand == 0X7002:
+            SZE()
+        elif operand == 0X7001:
+            HLT()
+            
+        def CLA():
+            self.register_write({"AC": 0})
+
+        def CLE():
+            self.register_write({"E": 0})
+
+        def CMA():
+            AC = self.register_read("AC")
+            self.register_write({"AC": ~AC & 0xFFFF}) 
+
+        def CME():
+            E = self.register_read("E")
+            self.register_write({"E": ~E & 0x1}) 
+
+        def CIR():
+            AC = self.register_read("AC")
+            E = self.register_read("E")
+            new_E = (AC & 0x1) 
+            AC = (AC >> 1) | (E << 15)  
+            self.register_write({"AC": AC})
+            self.register_write({"E": new_E})
+
+        def CIL(): 
+            AC = self.register_read("AC")
+            E = self.register_read("E")
+            new_E = (AC >> 15) & 0x1  
+            AC = ((AC << 1) & 0xFFFF) | E  
+            self.register_write({"AC": AC})
+            self.register_write({"E": new_E})
+
+        def INC(): 
+            AC = self.register_read("AC")
+            self.register_write({"AC": (AC + 1) & 0xFFFF})  
+
+        def SPA():
+            AC = self.register_read("AC")
+            if AC >= 0:
+                PC = self.register_read("PC")
+                self.register_write({"PC": PC + 1}) 
+
+        def SNA():
+            AC = self.register_read("AC")
+            if AC < 0:
+                PC = self.register_read("PC")
+                self.register_write({"PC": PC + 1})  
+                    
+        def SZA():
+            AC = self.register_read("AC")
+            if AC == 0:
+                PC = self.register_read("PC")
+                self.register_write({"PC": PC + 1}) 
+
+        def SZE():
+            E = self.register_read("E")
+            if E == 0:
+                PC = self.register_read("PC")
+                self.register_write({"PC": PC + 1}) 
+
+        def HLT(): 
+            raise SystemExit("HALT instruction executed. Stopping the CPU.") 
 
 
     def memory_based_instruction(self, opcode, operand):
@@ -189,13 +275,14 @@ class Core:
                 pass
             else:
                 operand = self.memory_read(operand)
-            
+
             self.register_write({"DR": operand})
             DR = self.register_read("DR")
             AC = self.register_read("AC")
-            self.register_write({"AC": AC + DR})    
-
-                
+            result, carry = self.alu.add(AC, DR)
+            self.register_write({"AC": result})
+            self.register_write({"E": carry})
+            
         def LDA(opcode, operand):
             if opcode == 0X2:
                 pass
@@ -216,7 +303,7 @@ class Core:
             
 
             AC = self.register_read("AC")
-            self.memory_write({operand: self.register_read("AC")})
+            self.memory_write({operand: AC})
 
 
         def BUN(opcode, operand):
@@ -225,9 +312,9 @@ class Core:
             else:
                 operand = self.memory_read(operand)    
 
-                        
-            self.register_write({"PC": operand})
-
+            AR = self.register_read("AR")
+            self.register_write({"PC": AR})
+            
         
         def BSA(opcode, operand):
             if opcode == 0X5:
@@ -235,18 +322,25 @@ class Core:
             else:
                 operand = self.memory_read(operand)    
 
-                        
-            self.memory_write({operand: self.register_read("PC")})
-            self.register_write({"PC": operand})
+        PC = self.register_read("PC")
+        self.memory_write({operand: PC})
+        AR = self.register_read("AR")
+        self.register_write({"PC": AR})              
 
 
         def ISZ(opcode, operand):
             if opcode == 0X6:
                 pass
             else:
-                operand = self.memory_read(operand)   
-
-            ... 
+                operand = self.memory_read(operand)
+            
+            value = self.memory_read(operand)
+            value = (value + 1) & 0xFFFF 
+            self.memory_write(operand, value)
+            
+            if value == 0:
+                PC = self.register_read("PC")
+                self.register_write({"PC": PC + 1})
 
 
 
