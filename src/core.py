@@ -1,180 +1,51 @@
 from compiler import compiler
-
-
-class Register:
-    def __init__(self, name, size):
-        self.name = name
-        self.size = size
-        self.value = 0X0
-
-    def read(self):
-        return self.value
-
-    def write(self, value):
-        self.value = value
-
-    def info(self):
-        print(f"name: {self.name}, size: {self.size}, value: {self.value}")
-    
-
-
-class Memory:
-    def __init__(self, size=4096):
-        self.size = size
-        self.memory = [0] * size
-        self.active_addresses = []
-
-    def read(self, address):
-        return self.memory[address]
-
-    def write(self, address, value):
-        self.active_addresses.append(address)
-        self.memory[address] = value
-
-    def bulk_read(self):
-        for add in self.active_addresses:
-            print("-"*40)
-            print(f"add: {add}, value: {self.read(add)}")
-            print("-"*40)
-
-
-
-class ALU:
-    def Add(self, a, b):
-        if isinstance(a, str):
-            a = int(a, 16)
-        if isinstance(b, str):
-            b = int(b, 16)
-        result = a + b
-        carry = result > 0xFFFF
-        return result & 0xFFFF, carry
-
-    def Sub(self, a, b):
-        result = a - b
-        carry = result < 0
-        return result & 0xFFFF, carry
-
-
-    def And(self, a, b):
-        if isinstance(a, str):
-            a = int(a, 16)
-        if isinstance(b, str):
-            b = int(b, 16)
-        result = a & b
-        return hex(result)
-    
-    def Rshift(self, a, n):
-        if isinstance(a, str):
-            a = int(a, 16)
-        result = a >> n
-        return hex(result)
-
-
-    def Lshift(self, a, n):
-        if isinstance(a, str):
-            a = int(a, 16)
-        result = a << n
-        return hex(result)
-    
-    def inverse(self, a):
-        if isinstance(a, str):
-            a = int(a, 16)
-        result = ~a
-        return hex(result)
-    
-
-    def Or(self, a, b):
-        if isinstance(a, str):
-            a = int(a, 16)
-        if isinstance(b, str):
-            b = int(b, 16)
-        result = a | b
-        return hex(result)
-
-    def Inc(self, a):
-        if isinstance(a, str):
-            a = int(a, 16)    
-        result = (a + 1) &  0xFFFF
-        return hex(result)
-    
-    def equal(self, a, b):
-        if isinstance(a, str):
-            a = int(a, 16)
-        if isinstance(b, str):
-            b = int(b, 16)
-        result = (a == b)
-        return result
-    
-
-    def greater_equal_than(self, a, b):
-        if isinstance(a, str):
-            a = int(a, 16)
-        if isinstance(b, str):
-            b = int(b, 16)
-        result = (a >= b)
-        return result
-
-    def less_equal_than(self, a, b):
-        if isinstance(a, str):
-            a = int(a, 16)
-        if isinstance(b, str):
-            b = int(b, 16)
-        result = (a >= b)
-        return result
-
-    def greater_than(self, a, b):
-        if isinstance(a, str):
-            a = int(a, 16)
-        if isinstance(b, str):
-            b = int(b, 16)
-        result = (a > b)
-        return result
-    
-    def less_than(self, a, b):
-        if isinstance(a, str):
-            a = int(a, 16)
-        if isinstance(b, str):
-            b = int(b, 16)
-        result = (a < b)
-        return result
-    
-
+from components import *
 
 class Core:
     def __init__(self) -> None:
+        # our mrmory object
+        # placing our components on the core
         self.memory = Memory()
-        self.registers = [] # container for registers objects
+
+        self.registers = [] # container for register objects
         # making objects and adding them to the self.registers
-        for i,j in [("AC",16),("IR",16),("AR",16),("DR",16),("INPR",16),("PC",16),("OUTR",16),("TR",16),("E",1)]:
+        for i,j in [("AC",16),("IR",16),("AR", 12),("DR",16),("INPR",8),("PC", 12),("OUTR",8),("TR",16),("E",1)]:
             reg = Register(i, j)
             self.registers.append(reg)
+
+        # ALU object
         self.ALU = ALU()
 
 
-    def memory_write(self, data: dict[str: int]) -> None:
+    # ------- methdos for registers and memory --------
+    def memory_write(self, data: dict[int: str]) -> None:
         for key, value in data.items():
             self.memory.write(key, value)
 
 
-    def memory_bulk_write(self, data: list[dict]) -> None:
+    def memory_bulk_write(self, data: list[dict[int: str]]) -> None:
         for cell in data:
             self.memory_write(cell)
     
     
-    def memory_bulk_read(self) -> list[dict]:
+    def memory_bulk_read(self) -> None:
         self.memory.bulk_read()
         
     
     
     def memory_read(self, address: int) -> dict:
-        if 0 <= address <= 4095:
-            return self.memory.read(address)
+        if isinstance(address, int):
+            if 0 <= address <= 4095:
+                return self.memory.read(address)
+            else:
+                raise ValueError(f"invalid cell address")
         else:
-            raise ValueError(f"invalid address cell")
+            raise ValueError(f"invalid cell address")
+        
 
   
         
-    def register_write(self, data: dict[int, int]) -> None:
+    def register_write(self, data: dict[str, int]) -> None:
         for label, value in data.items():
             for reg in self.registers:
                 if reg.name == label:
@@ -200,6 +71,9 @@ class Core:
         print("-" * 40)
 
 
+
+    # ----------- compiling the instructions -------------
+
     @staticmethod
     def compiling_instructions(instructions: list[str]) -> list[str]:
         return compiler(instructions)
@@ -212,6 +86,8 @@ class Core:
         Args:
             machinecode (list[str]): the list of machine codes instructions
         """
+
+        # saving the codes in the first cells of the memory
         ar = 0
         for code in machinecode:
             self.memory.write(ar, code)
@@ -224,26 +100,39 @@ class Core:
 
 
 
-    def fetch_and_decode(self):
-        self.PC = self.register_read("PC")
-        self.register_write({"AR": self.PC})
-        print(self.machine_code_instrucions)
-        
-        self.carry = False
-        self.zero = False
-        # while True:
-        for instruct in self.machine_code_instrucions:
+
+    # ----------- execution of machinecodes stored in memory --------------
+    def fetch_and_decode(self):   
+        print(self.machine_code_instrucions)     
+        while True:
+            self.PC = self.register_read("PC") # an integer
+
+            # storing PC in AR register 
+            self.register_write({"AR": self.PC})
+            AR = self.register_read("AR") # an integer
+
             # retrieving address register through PC number
-            IR = self.memory.read(self.PC) # EX: "0X4001"
+            IR = self.memory.read(AR) # EX: "0X4001"
+            self.register_write({"IR": IR})
+
+
+            # checsk if we reached the END instruction
+            # END instruction -> 0x0 or 0 as decimal integer
+            int_IR = int(IR, 16)
+            if int_IR == 0:
+                break
+
+            # PC incremention
             self.PC += 1
             self.register_write({"PC": self.PC})
 
-            
+            # decoding
             opcode = (self.ALU.And(IR, 0XF000)) # EX: "0x4000"
             opcode = self.ALU.Rshift(opcode , 12) # EX: "0X4"
             operand = self.ALU.And(IR, 0X0FFF) # EX: "0X1" or "0X800"
-            print(opcode, operand)
 
+            # chossing the proper function
+            # DOESN'T include INP/OUT instructions
             if opcode == "0x7":
                 self.register_based_instruction(operand)
             else:
@@ -255,9 +144,11 @@ class Core:
             self.register_write({"AC": 0})
             self.registers_info()
 
+
         def CLE():
             self.register_write({"E": 0})
             self.registers_info()
+
 
         def CMA():
             AC = self.register_read("AC")
@@ -308,6 +199,7 @@ class Core:
                 self.register_write({"PC": self.PC}) 
             self.registers_info()
 
+
         def SNA():
             AC = self.register_read("AC")
             if self.ALU.less_than(AC, 0): # AC < 0
@@ -315,6 +207,7 @@ class Core:
                 self.PC += 1
                 self.register_write({"PC": self.PC})  
             self.registers_info()
+            
 
                     
         def SZA():
@@ -335,19 +228,16 @@ class Core:
             self.registers_info()
 
 
-
         def HLT(): 
             raise SystemExit("HALT instruction executed. Stopping the CPU.")         
 
-
-
-        
+ 
         print("register based")
         if operand == "0x800":
             print("CLA")
             CLA()
         elif operand == "0x400":
-            print("CLA")
+            print("CLE")
             CLE()
         elif operand == "0x200":
             print("CMA")
@@ -381,98 +271,171 @@ class Core:
             HLT()
             
 
-
     def memory_based_instruction(self, opcode, operand):
         def AND(opcode, operand):
-            ...
-            # if opcode == 0X0:
-            #     pass
-            # else:
-            #     operand = self.memory_read(operand)
-            
-            # self.register_write({"DR": operand})
-            # DR = self.register_read("DR")
-            # AC = self.register_read("AC")
-            # self.register_write({"AC": AC & DR})    
+            if opcode == "0x0":
+                pass
+            else:
+                operand = self.memory_read(int(operand, 16))
+
+            operand = int(operand, 16)
+
+            # storing in operand in data register
+            self.register_write({"DR": operand})
+            DR = self.register_read("DR")
+
+            # And operation on the AC
+            AC = self.register_read("AC")
+            self.register_write({"AC": self.ALU.And(AC, DR)}) # AC & DR
+
+            self.registers_info()
+            self.memory_bulk_read()
 
         
         def ADD(opcode, operand):
-            ...
-            # if opcode == 0X1:
-            #     pass
-            # else:
-            #     operand = self.memory_read(operand)
+            print(opcode, operand)
+            if opcode == "0x1":
+                pass
+            else:
+                operand = self.memory_read(int(operand, 16))
 
-            # self.register_write({"DR": operand})
-            # DR = self.register_read("DR")
-            # AC = self.register_read("AC")
-            # result, carry = self.ALU.add(AC, DR)
-            # self.register_write({"AC": result})
-            # self.register_write({"E": carry})
+            # storing in operand in data register
+            operand = int(operand, 16)
+
+            # storing in operand in data register
+            self.register_write({"DR": operand})
+            DR = self.register_read("DR")
+
+            # ADD operation in AC
+            AC = self.register_read("AC")
+            result, carry = self.ALU.Add(AC, DR)
+            self.register_write({"AC": result})
+            self.register_write({"E": carry})
+
+            self.registers_info()
+            self.memory_bulk_read()
             
+
         def LDA(opcode, operand):
-            ...
-            # if opcode == 0X2:
-            #     pass
-            # else:
-            #     operand = self.memory_read(operand)
-            
-            # self.register_write({"DR": operand})
-            # DR = self.register_read("DR")
-            # self.register_write({"AC": DR})    
+            print(opcode, operand)
+            if opcode == "0x2":
+                pass
+            else:
+                operand = self.memory_read(int(operand, 16))
+            # storing in operand in data register
+            operand = int(operand, 16)
+            self.register_write({"DR": operand})
+            DR = self.register_read("DR")
 
+            # searching for the value
+            self.register_write({"AR": DR})
+            AR = self.register_read("AR")            
+            value = self.memory_read(AR)
+
+            # writing the value in the accumulator
+            self.register_write({"AC": value})
+
+            self.registers_info()
+            self.memory_bulk_read()
 
 
         def STA(opcode, operand):
-            ...
-            # if opcode == 0X3:
-            #     pass
-            # else:
-            #     operand = self.memory_read(operand)
-            
+            print(opcode, operand)
+            if opcode == "0x3":
+                pass
+            else:
+                operand = self.memory_read(int(operand, 16))
+            # storing in operand in data register
+            operand = int(operand, 16)
+            self.register_write({"DR": operand})
+            DR = self.register_read("DR")
 
-            # AC = self.register_read("AC")
-            # self.memory_write({operand: AC})
+            # storing accumulator
+            AC = self.register_read("AC")
+            self.memory_write({DR: AC})
+
+            self.registers_info()
+            self.memory_bulk_read()
 
 
         def BUN(opcode, operand):
-            ...
-            # if opcode == 0X4:
-            #     pass
-            # else:
-            #     operand = self.memory_read(operand)    
+            if opcode == "0x4":
+                pass
+            else:
+                operand = self.memory_read(int(operand, 16)) 
 
-            # AR = self.register_read("AR")
-            # self.register_write({"PC": AR})
+            # storing in operand in data register
+            operand = int(operand, 16)
+            self.register_write({"DR": operand})
+            DR = self.register_read("DR")
+
+            # changing the PC
+            self.register_write({"PC": DR})
+
+            self.registers_info()
+            self.memory_bulk_read()
             
         
         def BSA(opcode, operand):
-            ...
-            # if opcode == 0X5:
-            #     pass
-            # else:
-            #     operand = self.memory_read(operand)    
+            print(operand, type(operand))
+            if opcode == "0x5":
+                pass
+            else:
+                operand = self.memory_read(int(operand, 16)) 
+                
+            # storing in operand in data register
+            operand = int(operand, 16)
+            print(operand, type(operand))
+            self.register_write({"DR": operand})
+            DR = self.register_read("DR")
 
-            # PC = self.register_read("PC")
-            # self.memory_write({operand: PC})
-            # AR = self.register_read("AR")
-            # self.register_write({"PC": AR})              
+            # stoing the address
+            self.register_write({"AR": DR})
+            AR = self.register_read("AR")
+
+            # access to PC value
+            self.PC = self.register_read("PC")
+            PC = hex(self.PC)
+
+            # writing the PC in the address
+            self.memory_write({AR: PC})
+
+            # the new PC
+            PC = self.ALU.Inc(AR)
+            PC = int(PC, 16)
+            self.register_write({"PC": PC})
+
+            self.registers_info()
+            self.memory_bulk_read()
 
 
         def ISZ(opcode, operand):
-            ...
-            # if opcode == 0X6:
-            #     pass
-            # else:
-            #     operand = self.memory_read(operand)
+            if opcode == "0x6":
+                pass
+            else:
+                operand = self.memory_read(int(operand, 16))  
             
-            # value = self.memory_read(operand)
-            # value = (value + 1) & 0xFFFF 
-            # self.memory_write(operand, value)
-            
-            # if value == 0:
-            #     PC = self.register_read("PC")
-            #     self.register_write({"PC": PC + 1})
+
+            # storing in operand in data register
+            operand = int(operand, 16)
+            self.register_write({"DR": operand})
+            DR = self.register_read("DR")
+
+
+            value = self.memory_read(operand)
+            value = self.ALU.Inc(value) # value + 1 
+            self.memory_write({DR: value})
+
+
+            print(value, type(value))
+            if int(value, 16) == 0:
+                PC = self.register_read("PC")
+                PC += 1
+                self.register_write({"PC": PC}) 
+
+            self.registers_info()
+            self.memory_bulk_read()
+
 
 
         print("memory based")
@@ -482,38 +445,85 @@ class Core:
         elif opcode == "0x1" or opcode == "0x9":
             print("ADD")
             ADD(opcode, operand) 
-        elif opcode == "0x2" or opcode == "0xA":
+        elif opcode == "0x2" or opcode == "0xa":
             print("LDA")
             LDA(opcode, operand) 
-        elif opcode == "0x3" or opcode == "0xB":
+        elif opcode == "0x3" or opcode == "0xb":
             print("STA")
             STA(opcode, operand) 
-        elif opcode == "0x4" or opcode == "0xC":
+        elif opcode == "0x4" or opcode == "0xc":
             print("BUN")
             BUN(opcode, operand) 
-        elif opcode == "0x5" or opcode == "0xD":
+        elif opcode == "0x5" or opcode == "0xd":
             print("BSA")
             BSA(opcode, operand) 
-        elif opcode == "0x6" or opcode == "0xE":
+        elif opcode == "0x6" or opcode == "0xe":
             print("ISZ")
             ISZ(opcode, operand) 
 
         
 
-
-
-
 def main():
+    # example
     c = Core()
-    c.register_write({"AC": 0x1})
-    c.register_write({"E": 0x0})
-    # ["0 ADD 74f", "1 BSA 54C", "0 ISZ 001", "CLA", "HLT", "INC", "SZA"]
-    c.compile([])
+    c.memory_write({0x70: "0x49", # 0x49 = 73
+                    74: "0x1132", # -> ADD instruction
+                    75: "0x0fff",  # -> AND instruction
+                    76: "0xC049", # indirect BUN to (0x49 = 73)
+
+                    # using this variable for looping
+                    # with ISZ and BUN
+                    0x90: "-1",   
+
+                    # Saving data
+                    0x100: "-1",
+                    0x101: "0xffff",
+                    0x102 : "0x5b13"
+                    })
+    c.compile([
+                "1 BSA 70", # indirect BSA to (0x70)th cell of memory
+
+                # ----- demonstrating skip instructions for AC ---
+                "CLA",
+                "INC", # AC > 0
+                "SPA",
+                "INC", # skiping
+                "CLA",
+                "SZA", # AC = 0 
+                "INC", # skiping
+                "0 LDA 100", # AC < 0 | -> LDA instruction
+                "SNA",
+                "INC", # skiping
+
+                # ---------- demonstrating E instructions ------
+                # making carry
+                "0 LDA 101", # -> LDA instruction
+                "0 ADD 1", # -> ADD instruction
+                # instructions
+                "CME", # complement E
+                "CLE", # clear E
+
+                # ------ demonstrating AC instructions -------
+                "0 LDA 102",
+                "CMA",
+                "CIR",
+                "CIL",
+
+                
+                "0 STA 60", # -> STA instruction
+                
+                # loop making
+                # amount of looping = -(value in the 0x90)
+                "0 ISZ 90", #  -> ISZ instruction
+                "0 BUN 0", # -> BUN instruction
+                "END"
+                ])
+
+    # "0 LDA 100", "INC", "0 STA 101"
     c.fetch_and_decode()
 
+
     
-
-
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-from pprint import pprint
+# the components of our cpu
 
 class Register:
     def __init__(self, name, size):
@@ -9,7 +9,8 @@ class Register:
     def read(self):
         return self.value
 
-    def write(self, value):
+    def write(self, value): 
+        # in registers the values are either string or integer
         self.value = value
 
     def info(self):
@@ -20,17 +21,38 @@ class Register:
 class Memory:
     def __init__(self, size=4096):
         self.size = size
-        self.memory = [0] * size
-        self.active_addresses = []
 
-    def read(self, address):
+        self.memory = [0] * size # list's length = 4096 at defult
+
+        # adresses that are changed throughout our program
+        self.active_addresses = [] 
+
+    def read(self, address: int) -> str:
+        """
+        reading the value of a cell of memory object 
+
+        :param address:  the address of the cell
+        :type address: int
+        :return: the value of the cell
+        :rtype: str
+        """
         return self.memory[address]
 
-    def write(self, address, value):
+    def write(self, address: int, value: str) -> None:
+        """writing a value in a cell of memory object
+
+        :param address: the address of the cell
+        :type address: int
+        :param value: the value that we write in the cell
+        :type value: str
+        """
         self.active_addresses.append(address)
         self.memory[address] = value
 
     def bulk_read(self):
+        """
+        prints our all the filled or changed cells in our memory object
+        """
         for add in set(self.active_addresses):
             print("-"*40)
             print(f"add: {add}, value: {self.read(add)}")
@@ -39,6 +61,7 @@ class Memory:
 
 
 class ALU:
+    # incluedes most of the arithmatic and logical operations in the CPU
     def Add(self, a, b):
         if isinstance(a, str):
             a = int(a, 16)

@@ -20,28 +20,41 @@ def compiler(instructions):
             instruction_line += 1
 
 
-            # compiling memory reference instructions
+            # ------ compiling memory reference instructions ------
             # convert them to macine code
 
 
-            if "ADD" in instruct:
+            if "AND" in instruct:
                 try:
+                    # slicing our operand out
                     ar = instruct[6: ]
+
+                    # to make sure that out operand's length is 3
+                    if len(ar) == 1:
+                        ar = "00" + ar
+                    elif len(ar) ==2:
+                        ar = "0" + ar
+
+                    # if our instruction is direct or indirect
                     if instruct[0] == "0":
-                        machine_code_instruction.append("0X0" + ar)
+                        machine_code_instruction.append("0x0" + ar)
                     elif instruct[0] == "1":
-                        machine_code_instruction.append("0X8" + ar) 
+                        machine_code_instruction.append("0x8" + ar) 
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
                     raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
-            if "AND" in instruct:
+            if "ADD" in instruct:
                 try:
                     ar = instruct[6: ]
+                    if len(ar) == 1:
+                        ar = "00" + ar
+                    elif len(ar) ==2:
+                        ar = "0" + ar
                     if instruct[0] == "0":
-                        machine_code_instruction.append("0X1" + ar)
+                        machine_code_instruction.append("0x1" + ar)
                     elif instruct[0] == "1":
-                        machine_code_instruction.append("0X9" + ar) 
+                        machine_code_instruction.append("0x9" + ar) 
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -49,10 +62,14 @@ def compiler(instructions):
             if "LDA" in instruct:
                 try:
                     ar = instruct[6: ]
+                    if len(ar) == 1:
+                        ar = "00" + ar
+                    elif len(ar) ==2:
+                        ar = "0" + ar
                     if instruct[0] == "0":
-                        machine_code_instruction.append("0X2" + ar)
+                        machine_code_instruction.append("0x2" + ar)
                     elif instruct[0] == "1":
-                        machine_code_instruction.append("0XA" + ar) 
+                        machine_code_instruction.append("0xA" + ar) 
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -60,10 +77,14 @@ def compiler(instructions):
             if "STA" in instruct:
                 try:
                     ar = instruct[6: ]
+                    if len(ar) == 1:
+                        ar = "00" + ar
+                    elif len(ar) ==2:
+                        ar = "0" + ar
                     if instruct[0] == "0":
-                        machine_code_instruction.append("0X3" + ar)
+                        machine_code_instruction.append("0x3" + ar)
                     elif instruct[0] == "1":
-                        machine_code_instruction.append("0XB" + ar) 
+                        machine_code_instruction.append("0xB" + ar) 
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -71,10 +92,14 @@ def compiler(instructions):
             if "BUN" in instruct:
                 try:
                     ar = instruct[6: ]
+                    if len(ar) == 1:
+                        ar = "00" + ar
+                    elif len(ar) ==2:
+                        ar = "0" + ar
                     if instruct[0] == "0":
-                        machine_code_instruction.append("0X4" + ar)
+                        machine_code_instruction.append("0x4" + ar)
                     elif instruct[0] == "1":
-                        machine_code_instruction.append("0XC" + ar) 
+                        machine_code_instruction.append("0xC" + ar) 
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}") 
                 except Exception:
@@ -82,10 +107,14 @@ def compiler(instructions):
             if "BSA" in instruct:
                 try:
                     ar = instruct[6: ]
+                    if len(ar) == 1:
+                        ar = "00" + ar
+                    elif len(ar) ==2:
+                        ar = "0" + ar
                     if instruct[0] == "0":
-                        machine_code_instruction.append("0X5" + ar)
+                        machine_code_instruction.append("0x5" + ar)
                     elif instruct[0] == "1":
-                        machine_code_instruction.append("0XD" + ar) 
+                        machine_code_instruction.append("0xD" + ar) 
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -93,22 +122,26 @@ def compiler(instructions):
             if "ISZ" in instruct:
                 try:
                     ar = instruct[6: ]
+                    if len(ar) == 1:
+                        ar = "00" + ar
+                    elif len(ar) ==2:
+                        ar = "0" + ar
                     if instruct[0] == "0":
-                        machine_code_instruction.append("0X4" + ar)
+                        machine_code_instruction.append("0x6" + ar)
                     elif instruct[0] == "1":
-                        machine_code_instruction.append("0XF" + ar) 
+                        machine_code_instruction.append("0xF" + ar) 
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
                     raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 
-            # compiling register reference instructions
+            # ---------- compiling register reference instructions ---------
             # convert them to macine code
             
             if "CLA" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7800")
+                        machine_code_instruction.append("0x7800")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -116,7 +149,7 @@ def compiler(instructions):
             if "CLE" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7400")
+                        machine_code_instruction.append("0x7400")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -124,7 +157,7 @@ def compiler(instructions):
             if "CMA" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7200")
+                        machine_code_instruction.append("0x7200")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -132,7 +165,7 @@ def compiler(instructions):
             if "CME" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7100")
+                        machine_code_instruction.append("0x7100")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -140,7 +173,7 @@ def compiler(instructions):
             if "CIR" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7080")
+                        machine_code_instruction.append("0x7080")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -148,7 +181,7 @@ def compiler(instructions):
             if "CIL" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7040")
+                        machine_code_instruction.append("0x7040")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -156,7 +189,7 @@ def compiler(instructions):
             if "INC" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7020")
+                        machine_code_instruction.append("0x7020")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -164,7 +197,7 @@ def compiler(instructions):
             if "SPA" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7010")
+                        machine_code_instruction.append("0x7010")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -172,7 +205,7 @@ def compiler(instructions):
             if "SNA" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7008")
+                        machine_code_instruction.append("0x7008")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -180,7 +213,7 @@ def compiler(instructions):
             if "SZA" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7004")
+                        machine_code_instruction.append("0x7004")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -188,7 +221,7 @@ def compiler(instructions):
             if "SZE" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7002")
+                        machine_code_instruction.append("0x7002")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -196,7 +229,7 @@ def compiler(instructions):
             if "HLT" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7001")
+                        machine_code_instruction.append("0x7001")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -204,11 +237,13 @@ def compiler(instructions):
                 
             # compiling INP/OUT reference instructions
             # convert them to macine code
+            # our executer code doesn't include INP/OUT instructions
+            # but the compiler compiles and save them in the memory
 
             if "INP" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7800")
+                        machine_code_instruction.append("0x7800")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -216,7 +251,7 @@ def compiler(instructions):
             if "OUT" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7400")
+                        machine_code_instruction.append("0x7400")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -224,7 +259,7 @@ def compiler(instructions):
             if "SKI" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7200")
+                        machine_code_instruction.append("0x7200")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -232,7 +267,7 @@ def compiler(instructions):
             if "SKO" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7100")
+                        machine_code_instruction.append("0x7100")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -240,7 +275,7 @@ def compiler(instructions):
             if "ION" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7080")
+                        machine_code_instruction.append("0x7080")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
@@ -248,10 +283,22 @@ def compiler(instructions):
             if "IOF" in instruct:
                 try:
                     if len(instruct) == 3:
-                        machine_code_instruction.append("0X7001")
+                        machine_code_instruction.append("0x7001")
                     else:
                         raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
                 except Exception:
                     raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
+
+
+            # -------------- END instruction --------------
+            if "END" in instruct:
+                try:
+                    if len(instruct) == 3:
+                        machine_code_instruction.append("0x0000")
+                    else:
+                        raise ValueError(f"Wrong Instructions: in the line {instruction_line}")
+                except Exception:
+                    raise ValueError(f"Wrong Instructions: in the line {instruction_line}")       
+                    
     
     return machine_code_instruction
