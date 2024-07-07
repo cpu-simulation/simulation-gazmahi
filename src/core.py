@@ -466,16 +466,16 @@ class Core:
 def main():
     # example
     c = Core()
-    c.memory_write({0x70: "0x49", # 0x49 = 73
-                    74: "0x1132", # -> ADD instruction
-                    75: "0x0fff",  # -> AND instruction
-                    76: "0xC049", # indirect BUN to (0x49 = 73)
+    c.memory_write({0x70: "0x47", # 0x49 = 73
+                    0x48: "0x1132", # -> ADD instruction
+                    0x49: "0x0fff",  # -> AND instruction
+                    0x4a: "0xC047", # indirect BUN to (0x49 = 73)
 
                     # using this variable for looping
                     # with ISZ and BUN
                     0x90: "-1",   
 
-                    # Saving data
+                    # Stored data
                     0x100: "-1",
                     0x101: "0xffff",
                     0x102 : "0x5b13"
